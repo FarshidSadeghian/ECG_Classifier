@@ -1,5 +1,6 @@
 import os 
 import wfdb
+import shutil
 import scipy.io
 import numpy as np
 from scipy.signal import resample
@@ -39,22 +40,32 @@ def resample_ecg_signal(ecg_signal, original_fs, target_fs):
 
     return resampled_signal
 
-def preprocess_data(data_dir, output_dir, target_fs=1000, resample_data=False):
+def preprocess_data(input_dir, output_dir, target_fs=1000, resample_data=False):
     """
     Preprocess ECG data from .mat files and save as .npy files.
     Optionally perform resampling.
-    """
+    """  
+    # Join folder paths
+    sample_input_dir = os.path.join(input_dir, 'sample/')
+    sample_output_dir = os.path.join(output_dir, 'sample/')
+
+    label_input_dir = os.path.join(input_dir, 'label/')
+    label_output_dir = os.path.join(output_dir, 'label/')
+    
+    # Copy exact input label path into output directory 
+    shutil.copytree(label_input_dir, label_output_dir)
+
     # Create output directory if it doesn't exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(sample_output_dir):
+        os.makedirs(sample_output_dir)
 
     # List all .mat files in the data directory
-    mat_files = [file for file in os.listdir(data_dir) if file.endswith('.mat')]
+    mat_files = [file for file in os.listdir(sample_input_dir) if file.endswith('.mat')]
 
     for mat_file in mat_files:
         # Construct file paths
-        mat_file_path = os.path.join(data_dir, mat_file)
-        hea_file_path = os.path.join(data_dir, mat_file.replace('.mat', '.hea'))
+        mat_file_path = os.path.join(sample_input_dir, mat_file)
+        hea_file_path = os.path.join(sample_input_dir, mat_file.replace('.mat', '.hea'))
 
         # Load ECG signal
         ecg_signal = load_ecg_data(mat_file_path)
@@ -69,7 +80,7 @@ def preprocess_data(data_dir, output_dir, target_fs=1000, resample_data=False):
             resampled_ecg = ecg_signal
 
         # Save preprocessed data
-        output_file_path = os.path.join(output_dir, f"{sample_name}.npy")
+        output_file_path = os.path.join(sample_output_dir, f"{sample_name}.npy")
         np.save(output_file_path, resampled_ecg)
 
 if __name__ == "__main__":
