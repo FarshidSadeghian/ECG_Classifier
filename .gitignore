@@ -51,5 +51,4 @@ pip-selfcheck.json
 *.egg
 
 # Ignore the data directory if it contains large files or is auto-generated
-data/raw/*
-data/processed/*
+data/*
